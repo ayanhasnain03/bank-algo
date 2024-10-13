@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Coder Banks</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 20px;
+      }
+      h1 {
+        color: #333;
+      }
+      .tab {
+        display: flex;
+        margin-bottom: 20px;
+      }
+      .tab button {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        padding: 10px;
+        cursor: pointer;
+        margin-right: 10px;
+        border-radius: 5px;
+      }
+      .tab button.active {
+        background-color: #0056b3;
+      }
+      form {
+        background: white;
+        padding: 20px;
+        border-radius: 5px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        display: none;
+      }
+      form.active {
+        display: block;
+      }
+      input[type="text"],
+      input[type="number"] {
+        width: 100%;
+        padding: 10px;
+        margin: 10px 0;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+      }
+      button {
+        background-color: #28a745;
+        color: white;
+        border: none;
+        padding: 10px;
+        border-radius: 5px;
+        cursor: pointer;
+        width: 100%;
+      }
+      button:hover {
+        background-color: #218838;
+      }
+      ul {
+        margin-top: 20px;
+        padding-left: 0;
+        list-style-type: none;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Coder Banks</h1>
+
+    <div class="tab">
+      <button class="active" onclick="showForm('accountForm')">
+        Create Account
+      </button>
+      <button onclick="showForm('depositForm')">Deposit</button>
+      <button onclick="showForm('withdrawForm')">Withdraw</button>
+    </div>
+
+    <form id="accountForm" class="active">
+      <input
+        type="text"
+        placeholder="Customer Name"
+        id="customerName"
+        required
+      />
+      <input
+        type="number"
+        placeholder="Initial Balance"
+        id="balance"
+        required
+      />
+      <button type="submit">Create Account</button>
+    </form>
+
+    <form id="depositForm">
+      <input type="number" id="depositAcNo" placeholder="Account No" required />
+      <input type="number" id="depositAmount" placeholder="Amount" required />
+      <button type="submit">Deposit</button>
+    </form>
+
+    <form id="withdrawForm">
+      <input
+        type="number"
+        id="withdrawAcNo"
+        placeholder="Account No"
+        required
+      />
+      <input type="number" id="withdrawAmount" placeholder="Amount" required />
+      <button type="submit">Withdraw</button>
+    </form>
+
+    <h2>Created Accounts</h2>
+    <ul id="accountsList"></ul>
+
+    <script>
+      function bankAccount(customerName, balance = 0) {
+        this.customerName = customerName;
+        this.accountNo = Date.now();
+        this.balance = balance;
+
+        this.deposit = function (amount) {
+          this.balance += Number(amount);
+        };
+
+        this.withdraw = function (amount) {
+          this.balance -= Number(amount);
+        };
+      }
+
+      const accounts = [];
+
+      const accountForm = document.querySelector("#accountForm");
+      const customerNameInput = document.querySelector("#customerName");
+      const balanceInput = document.querySelector("#balance");
+      const accountsList = document.querySelector("#accountsList");
+
+      accountForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const account = new bankAccount(
+          customerNameInput.value,
+          +balanceInput.value
+        );
+        accounts.push(account);
+        updateAccountsList();
+        accountForm.reset();
+      });
+
+      const depositForm = document.querySelector("#depositForm");
+      const depositAcNoInput = document.querySelector("#depositAcNo");
+      const depositAmountInput = document.querySelector("#depositAmount");
+
+      depositForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const accNo = depositAcNoInput.value;
+        const amount = depositAmountInput.value;
+
+        const acc = accounts.find((acc) => acc.accountNo === +accNo);
+        if (acc) {
+          acc.deposit(amount);
+          updateAccountsList();
+          depositForm.reset();
+        } else {
+          alert("Account not found!");
+        }
+      });
+
+      const withdrawForm = document.querySelector("#withdrawForm");
+      const withdrawAcNoInput = document.querySelector("#withdrawAcNo");
+      const withdrawAmountInput = document.querySelector("#withdrawAmount");
+
+      withdrawForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const accNo = withdrawAcNoInput.value;
+        const amount = withdrawAmountInput.value;
+
+        const acc = accounts.find((acc) => acc.accountNo === +accNo);
+        if (acc) {
+          if (acc.balance >= amount) {
+            acc.withdraw(amount);
+            updateAccountsList();
+            withdrawForm.reset();
+          } else {
+            alert("Insufficient balance!");
+          }
+        } else {
+          alert("Account not found!");
+        }
+      });
+
+      function updateAccountsList() {
+        accountsList.innerHTML = "";
+        accounts.forEach((acc) => {
+          const li = document.createElement("li");
+          li.textContent = `Account No: ${acc.accountNo}, Customer: ${
+            acc.customerName
+          }, Balance: $${acc.balance.toFixed(2)}`;
+          accountsList.appendChild(li);
+        });
+      }
+
+      function showForm(formId) {
+        const forms = document.querySelectorAll("form");
+        forms.forEach((form) => {
+          form.classList.remove("active");
+        });
+
+        document.querySelector(`#${formId}`).classList.add("active");
+
+        const buttons = document.querySelectorAll(".tab button");
+        buttons.forEach((button) => {
+          button.classList.remove("active");
+        });
+
+        const activeButton = [...buttons].find(
+          (button) =>
+            button.textContent.toLowerCase() ===
+            formId.replace("Form", "").toLowerCase()
+        );
+        activeButton.classList.add("active");
+      }
+    </script>
+  </body>
+</html>
